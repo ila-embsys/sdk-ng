@@ -68,9 +68,11 @@ jobs:
           export CT_ONLY_DOWNLOAD=y
           mkdir -p ${SDK_NG_HOME}/build/dummy
           cd ${SDK_NG_HOME}/build/dummy
-          su - build -c "$CT_NG defconfig DEFCONFIG=${GITDIR}/configs/arm.config"
+          # su - build -c "$CT_NG defconfig DEFCONFIG=${GITDIR}/configs/arm.config"
+          ${{ env.ACT && su - build -c "$CT_NG defconfig DEFCONFIG=${GITDIR}/configs/arm.config" || $CT_NG defconfig DEFCONFIG=${GITDIR}/configs/arm.config }}
           # sudo -s -u build bash -c "$CT_NG defconfig DEFCONFIG=${GITDIR}/configs/arm.config"
-          su - build -c "$CT_NG build STOP=companion_libs_for_build"
+          # su - build -c "$CT_NG build STOP=companion_libs_for_build"
+          ${{ env.ACT && su - build -c "$CT_NG build STOP=companion_libs_for_build" || $CT_NG build STOP=companion_libs_for_build }}
           # sudo -s -u build bash -c "$CT_NG build STOP=companion_libs_for_build"
           cd ${GITDIR}
           rm -fr ${CT_PREFIX}/arm-zephyr-eabi
