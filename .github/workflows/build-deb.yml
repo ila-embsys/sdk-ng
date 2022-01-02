@@ -150,7 +150,8 @@ jobs:
           # sudo -s -u build "./go.sh ${{ matrix.arch }}"
           chmod 777 ${SDK_NG_HOME}
           chmod -R 777 ${SDK_NG_HOME}/build/
-          sudo -s -u build bash -c "./go.sh ${{ matrix.arch }}"
+          # sudo -s -u build bash -c "./go.sh ${{ matrix.arch }}"
+          ${{ env.ACT && 'sudo -s -u build bash -c "./go.sh ${{ matrix.arch }}"' || './go.sh ${{ matrix.arch }}' }}
           ls -lstr
       - name: "upload build log"
         uses: actions/upload-artifact@v2 
