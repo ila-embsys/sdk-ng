@@ -36,13 +36,14 @@ jobs:
         ]
     steps:
       - name: create non-root user
+        if: ${{ env.ACT }}
         run: |
           useradd -m build || exit 0
       - name: "clone"
         uses: actions/checkout@v2
       - name: "prereq"
         run:
-          apt-get update && apt-get install -y --no-install-recommends flex texinfo help2man libtool-bin bison byacc
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends flex texinfo help2man libtool-bin bison byacc
       - name: Cache CrossTool
         id: cache-crosstool
         if: ${{ !env.ACT }}
@@ -128,13 +129,14 @@ jobs:
           name: crosstool
       - name: "prereq"
         run:
-          apt-get update && apt-get install -y --no-install-recommends flex texinfo help2man libtool-bin bison byacc python3-dev python3-pip
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends flex texinfo help2man libtool-bin bison byacc python3-dev python3-pip
       - name: unpack artifact
         run: |
           # ls -la
           cat crosstool.tar* | tar xf -
           rm crosstool.tar*
       - name: create non-root user
+        if: ${{ env.ACT }}
         run: |
           useradd -m build || exit 0
       - name: "build ${{ matrix.arch }} for ${{ matrix.host }}"
