@@ -51,8 +51,6 @@ jobs:
         with:
           path: .
           key: ${{ runner.os }}-crosstool-${{ hashFiles('./go.sh') }}
-          restore-keys: |
-            ${{ runner.os }}-crosstool-
       - name: "build ct-ng"
         if: steps.cache-crosstool.outputs.cache-hit != 'true'
         run: |
@@ -148,8 +146,8 @@ jobs:
           export CT_NG=${SDK_NG_HOME}/bin/ct-ng
           export CT_PREFIX=${SDK_NG_HOME}/build/output/
           # sudo -s -u build "./go.sh ${{ matrix.arch }}"
-          chmod 777 ${SDK_NG_HOME}
-          chmod -R 777 ${SDK_NG_HOME}/build/
+          # chmod 777 ${SDK_NG_HOME}
+          # chmod -R 777 ${SDK_NG_HOME}/build/
           # sudo -s -u build bash -c "./go.sh ${{ matrix.arch }}"
           ${{ env.ACT && 'sudo -s -u build bash -c "./go.sh ${{ matrix.arch }}"' || './go.sh ${{ matrix.arch }}' }}
           ls -lstr
