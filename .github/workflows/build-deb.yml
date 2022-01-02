@@ -208,7 +208,7 @@ jobs:
           Section: devel
           Priority: optional
           Architecture: amd64
-          Maintainer: ${{ MAINTAINER_NAME }} <${{ MAINTAINER_EMAIL }}>
+          Maintainer: ${{ env.MAINTAINER_NAME }} <${{ env.MAINTAINER_EMAIL }}>
           Description: ${{ matrix.arch }}-zephyr-eabi toolchain with enabled Ada lang" > ${{ matrix.arch }}-zephyr-eabi_1.0-1/DEBIAN/control
       - name: unpack toolchain
         run: |
