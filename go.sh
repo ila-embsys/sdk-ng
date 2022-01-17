@@ -168,6 +168,9 @@ for t in ${TARGETS}; do
 		echo "# CT_GDB_CROSS_PYTHON is not set" >> defconfig
 	fi
 
+	cat ${TARGET_BUILD_DIR}/defconfig | grep -q "CT_ALLOW_BUILD_AS_ROOT=y" || echo "CT_ALLOW_BUILD_AS_ROOT=y" >> ${TARGET_BUILD_DIR}/defconfig
+	cat ${TARGET_BUILD_DIR}/defconfig | grep -q "CT_ALLOW_BUILD_AS_ROOT_SURE=y" || echo "CT_ALLOW_BUILD_AS_ROOT_SURE=y" >> ${TARGET_BUILD_DIR}/defconfig
+
 	${CT_NG} defconfig DEFCONFIG=${TARGET_BUILD_DIR}/defconfig
 	${CT_NG} savedefconfig DEFCONFIG=${TARGET_BUILD_DIR}/${t}.config
 	${CT_NG} build -j ${JOBS}
