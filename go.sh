@@ -180,7 +180,7 @@ for t in ${TARGETS}; do
 	rm -rf ${CT_PREFIX}/*/newlib-nano
 
 	popd
-	rm -fr ${TARGET_BUILD_DIR}
+	# rm -fr ${TARGET_BUILD_DIR}
 	mv ${CT_PREFIX}/${TRIPLET}/build.log.bz2 ${OUTPUT_DIR}/build.${t}.${os}.${machine}.log.bz2
 	tar -jcvf ${TARBALL_DIR}/${t}.${os}.${machine}.tar.bz2 -C ${OUTPUT_DIR} ${TARGET_DIR}${TRIPLET}
 done
