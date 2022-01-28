@@ -41,6 +41,9 @@ PACKAGE_ROOT = ${BUILD_OUT}/${TRIPLET}
 INSTALL_DIR = $(DESTDIR)$(PREFIX)/zephyr-sdk
 
 define install_target
+
+.PHONY: install_$(1)
+
 install_$(1):
 
 	@echo Processing the recipe: install_$(1)
@@ -207,4 +210,4 @@ distclean: clean
 uninstall:
 	: # do nothing
 
-.PHONY: all add_preloaded_sources add_ada_to_configs build install clean distclean uninstall
+.PHONY: all install_cmake install_every_target install_common install_targets add_preloaded_sources add_ada_to_configs build install clean distclean uninstall
