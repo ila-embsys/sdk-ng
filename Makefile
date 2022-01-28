@@ -69,6 +69,8 @@ install_$(1):
 	${INSTALL} ${PACKAGE_ROOT}/share/gcc-* $(INSTALL_DIR)/share/
 	${INSTALL} ${PACKAGE_ROOT}/share/gdb $(INSTALL_DIR)/share/
 	${INSTALL} ${PACKAGE_ROOT}/share/licenses $(INSTALL_DIR)/share/
+
+	${INSTALL} VERSION ${PACKAGE_ROOT}/sdk_version
 endef
 
 # Dependencies for 'install' recipe
@@ -138,6 +140,9 @@ install_common:
 	else \
 		echo "Not all toolchain's 'share' directory equal. Can not install as common package"; \
 	fi
+
+	mkdir -p $(INSTALL_DIR)/zephyr-sdk-version;
+	${INSTALL} VERSION $(INSTALL_DIR)/zephyr-sdk-version/sdk_version
 
 install_targets: install_every_target install_common
 
