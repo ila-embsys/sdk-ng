@@ -97,7 +97,7 @@ $(foreach T, $(install_target_recipes), $(eval $(call install_target,$(subst ins
 
 # Default install recipes
 ifeq (,${install_target_recipes})
-install_target_recipes := install_every_target
+install_target_recipes := install_targets
 endif
 
 install_cmake:
@@ -106,7 +106,7 @@ install_cmake:
 	@echo Going to install CMake
 
 	mkdir -p $(INSTALL_DIR)
-	${INSTALL} cmake $(INSTALL_DIR)/zephyr-cmake
+	${INSTALL} cmake $(INSTALL_DIR)/zephyr-sdk-cmake
 
 install_every_target:
 
@@ -116,6 +116,27 @@ install_every_target:
 	find ${BUILD_OUT} -maxdepth 1 -name "*-zephyr-eabi" -execdir mkdir -p $(INSTALL_DIR)/'{}' \;
 	find ${BUILD_OUT} -maxdepth 1 -name "*-zephyr-eabi" -exec ${INSTALL} '{}' $(INSTALL_DIR)/ \;
 	find ${BUILD_OUT} -maxdepth 1 -name "*-zephyr-elf" -exec ${INSTALL} '{}' $(INSTALL_DIR)/ \;
+
+install_common:
+
+	if [ ! $(diff -x 'gdbinit' -r $(INSTALL_DIR)/*-zephyr-*/share) ]; then \
+		echo "All toolchain's 'share' directory equal. Install as common package 'zephyr-sdk-gdb'"; \
+		mkdir -p $(INSTALL_DIR)/zephyr-sdk-gdb; \
+		ls ${BUILD_OUT} \
+		| sort \
+		| grep -e '^.*\-zephyr\-.*$$' \
+		| head -n 1 \
+		| sed 's@^@'"${BUILD_OUT}"'\/@' \
+		| sed 's/$$/\/share/' \
+		| xargs ${INSTALL} -t $(INSTALL_DIR)/zephyr-sdk-gdb/; \
+		\
+		mkdir -p $(INSTALL_DIR)/zephyr-sdk-licenses/share/; \
+		mv $(INSTALL_DIR)/zephyr-sdk-gdb/share/licenses/ $(INSTALL_DIR)/zephyr-sdk-licenses/share/licenses; \
+	else \
+		echo "Not all toolchain's 'share' directory equal. Can not install as common package"; \
+	fi
+
+install_targets: install_every_target install_common
 
 install: ${install_target_recipes} install_cmake
 
