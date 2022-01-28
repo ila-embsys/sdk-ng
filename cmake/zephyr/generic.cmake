@@ -27,6 +27,6 @@ if(NOT CROSS_COMPILE_TARGET)
   message(FATAL_ERROR "Unable to find 'x86_64-zephyr-elf' or any other architecture in ${TOOLCHAIN_HOME}")
 endif()
 
-set(CROSS_COMPILE ${one_toolchain_root}/${CROSS_COMPILE_TARGET}/bin/${CROSS_COMPILE_TARGET}-)
+set(CROSS_COMPILE ${one_toolchain_root}/bin/${CROSS_COMPILE_TARGET}-)
 set(SYSROOT_DIR   ${one_toolchain_root}/${SYSROOT_TARGET}/${SYSROOT_TARGET})
 set(TOOLCHAIN_HAS_NEWLIB ON CACHE BOOL "True if toolchain supports newlib")
