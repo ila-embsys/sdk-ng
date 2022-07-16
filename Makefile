@@ -115,6 +115,7 @@ install_every_target:
 
 	find ${BUILD_OUT} -maxdepth 1 -name "*-zephyr-eabi" -execdir mkdir -p $(INSTALL_DIR)/'{}' \;
 	find ${BUILD_OUT} -maxdepth 1 -name "*-zephyr-eabi" -exec ${INSTALL} '{}' $(INSTALL_DIR)/ \;
+	find ${BUILD_OUT} -maxdepth 1 -name "*-zephyr-elf" -exec ${INSTALL} '{}' $(INSTALL_DIR)/ \;
 
 install: ${install_target_recipes} install_cmake
 
