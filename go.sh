@@ -125,7 +125,7 @@ for t in ${TARGETS}; do
 		exit 1
 	fi
 
-	build_crosstool
+	# build_crosstool
 
 	echo "Building ${t}"
 	TARGET_BUILD_DIR=${SDK_NG_HOME}/build/build_${t}
