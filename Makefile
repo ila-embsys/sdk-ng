@@ -1,29 +1,70 @@
-PREFIX := /usr
-BUILD_OUT := build/output/arm-zephyr-eabi
+PREFIX = /opt/zephyr-sdk
 INSTALL := cp -lr
 
+# If the first argument is "install"...
+ifeq (install,$(firstword $(MAKECMDGOALS)))
+# use the rest as arguments for "install"
+INSTALL_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+# ...and turn them into do-nothing targets
+$(eval $(INSTALL_ARGS):;@:)
+endif
+
+# Variables for "install_*" Make recipes
+TARGET = ${1}
+TRIPLET = $(TARGET)-zephyr-eabi
+BUILD_OUT = build/output
+PACKAGE_ROOT = ${BUILD_OUT}/${TRIPLET}
+INSTALL_DIR = $(DESTDIR)$(PREFIX)
+
+define install_target
+install_$(1):
+
+	@echo Processing reciepe: install_$(1)
+	@echo Installing target: ${1}
+	@echo Triplet: $(call TRIPLET,${1})
+	@echo Package root: ${call PACKAGE_ROOT,${1}}
+	@echo Install dir: $(call INSTALL_DIR,$(1))
+
+	# target specific
+	mkdir -p $(INSTALL_DIR)
+	${INSTALL} ${PACKAGE_ROOT}/arm-zephyr-eabi	$(INSTALL_DIR)/
+	${INSTALL} ${PACKAGE_ROOT}/bin $(INSTALL_DIR)/
+
+	mkdir -p $(INSTALL_DIR)/lib	
+	${INSTALL} ${PACKAGE_ROOT}/lib/gcc $(INSTALL_DIR)/lib/
+	${INSTALL} ${PACKAGE_ROOT}/lib/ldscripts $(INSTALL_DIR)/lib/
+
+	mkdir -p $(INSTALL_DIR)/libexec/gcc
+	${INSTALL} ${PACKAGE_ROOT}/libexec/gcc/arm-zephyr-eabi $(INSTALL_DIR)/libexec/gcc/
+
+	# not target specific?
+	mkdir -p $(INSTALL_DIR)/share
+	${INSTALL} ${PACKAGE_ROOT}/share/gcc-* $(INSTALL_DIR)/share/
+	${INSTALL} ${PACKAGE_ROOT}/share/gdb $(INSTALL_DIR)/share/
+	${INSTALL} ${PACKAGE_ROOT}/share/licenses $(INSTALL_DIR)/share/
+endef
+
+# Dependencies for 'install' recipe
+ifdef INSTALL_ARGS
+install_recipes := $(foreach T, $(INSTALL_ARGS), install_${T})
+else
+ifdef DESTDIR
+DH_INSTALL_TARGET := $(notdir $(DESTDIR))
+install_recipes := install_$(subst -zephyr-eabi,,${DH_INSTALL_TARGET})
+endif
+endif
+
+# Generate Make recipes
+$(foreach T, $(install_recipes), $(eval $(call install_target,$(subst install_,,${T}))))
 
 all: build
 
-install:
+install: ${install_recipes}
 
-	# target specific
-	mkdir -p $(DESTDIR)$(PREFIX)
-	${INSTALL} ${BUILD_OUT}/arm-zephyr-eabi	$(DESTDIR)$(PREFIX)/
-	${INSTALL} ${BUILD_OUT}/bin $(DESTDIR)$(PREFIX)/
-
-	mkdir -p $(DESTDIR)$(PREFIX)/lib	
-	${INSTALL} ${BUILD_OUT}/lib/gcc $(DESTDIR)$(PREFIX)/lib/
-	${INSTALL} ${BUILD_OUT}/lib/ldscripts $(DESTDIR)$(PREFIX)/lib/
-
-	mkdir -p $(DESTDIR)$(PREFIX)/libexec/gcc
-	${INSTALL} ${BUILD_OUT}/libexec/gcc/arm-zephyr-eabi $(DESTDIR)$(PREFIX)/libexec/gcc/
-
-	# not target specific?
-	mkdir -p $(DESTDIR)$(PREFIX)/share
-	${INSTALL} ${BUILD_OUT}/share/gcc-* $(DESTDIR)$(PREFIX)/share/
-	${INSTALL} ${BUILD_OUT}/share/gdb $(DESTDIR)$(PREFIX)/share/
-	${INSTALL} ${BUILD_OUT}/share/licenses $(DESTDIR)$(PREFIX)/share/
+ifndef install_recipes
+	@echo kek
+endif
+	
 
 add_preloaded_sources:
 
