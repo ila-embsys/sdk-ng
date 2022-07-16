@@ -125,18 +125,18 @@ install_every_target:
 install_common:
 
 	if [ ! $(diff -x 'gdbinit' -r $(INSTALL_DIR)/*-zephyr-*/share) ]; then \
-		echo "All toolchain's 'share' directory equal. Install as common package 'zephyr-sdk-gdb'"; \
-		mkdir -p $(INSTALL_DIR)/zephyr-sdk-gdb; \
+		echo "All toolchain's 'share' directory equal. Install as common package 'zephyr-sdk-gdb-python'"; \
+		mkdir -p $(INSTALL_DIR)/zephyr-sdk-gdb-python; \
 		ls ${BUILD_OUT} \
 		| sort \
 		| grep -e '^.*\-zephyr\-.*$$' \
 		| head -n 1 \
 		| sed 's@^@'"${BUILD_OUT}"'\/@' \
 		| sed 's/$$/\/share/' \
-		| xargs ${INSTALL} -t $(INSTALL_DIR)/zephyr-sdk-gdb/; \
+		| xargs ${INSTALL} -t $(INSTALL_DIR)/zephyr-sdk-gdb-python/; \
 		\
 		mkdir -p $(INSTALL_DIR)/zephyr-sdk-licenses/share/; \
-		mv $(INSTALL_DIR)/zephyr-sdk-gdb/share/licenses/ $(INSTALL_DIR)/zephyr-sdk-licenses/share/licenses; \
+		mv $(INSTALL_DIR)/zephyr-sdk-gdb-python/share/licenses/ $(INSTALL_DIR)/zephyr-sdk-licenses/share/licenses; \
 	else \
 		echo "Not all toolchain's 'share' directory equal. Can not install as common package"; \
 	fi
