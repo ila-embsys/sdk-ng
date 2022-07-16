@@ -172,6 +172,12 @@ for t in ${TARGETS}; do
 	cat ${TARGET_BUILD_DIR}/defconfig | grep -q "CT_ALLOW_BUILD_AS_ROOT_SURE=y" || echo "CT_ALLOW_BUILD_AS_ROOT_SURE=y" >> ${TARGET_BUILD_DIR}/defconfig
 	cat ${TARGET_BUILD_DIR}/defconfig | grep -q "CT_LOCAL_TARBALLS_DIR" || echo "CT_LOCAL_TARBALLS_DIR=\"${CT_PREFIX}/sources\"" >> ${TARGET_BUILD_DIR}/defconfig
 
+	# [INFO ]    Stripping all target toolchain libraries
+	# [DEBUG]    ==> Executing:  'arm-zephyr-eabi-objcopy' '--discard-locals' '-R' '.comment' '-R' '.note' '-R' '.debug_info' '-R' '.debug_aranges' '-R' '.debug_pubnames' '-R' '.debug_pubtypes' '-R' '.debug_abbrev' '-R' '.debug_line' '-R' '.debug_str' '-R' '.debug_ranges' '-R' '.debug_loc' '/usr/src/packages/BUILD/build/output/arm-zephyr-eabi/arm-zephyr-eabi/lib/libc_nano.a'
+	# [ALL  ]    arm-zephyr-eabi-objcopy: /usr/src/packages/BUILD/build/output/arm-zephyr-eabi/arm-zephyr-eabi/lib/stqB7zI6/lib_a-ldtoa.o: symbol `.debug_info' required but not present
+	# [ALL  ]    arm-zephyr-eabi-objcopy: /usr/src/packages/BUILD/build/output/arm-zephyr-eabi/arm-zephyr-eabi/lib/stqB7zI6/lib_a-ldtoa.o: no symbols
+	cat ${TARGET_BUILD_DIR}/defconfig | grep -q "CT_STRIP_TARGET_TOOLCHAIN_LIBRARIES=n" || echo "CT_STRIP_TARGET_TOOLCHAIN_LIBRARIES=n" >> ${TARGET_BUILD_DIR}/defconfig
+
 	sed -i -e 's/GITHUB_WORKSPACE/SDK_NG_HOME/' ${TARGET_BUILD_DIR}/defconfig
 
 	${GITDIR}/scripts/patch_config_for_ada.sh ${TARGET_BUILD_DIR}/defconfig
