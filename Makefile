@@ -1,14 +1,36 @@
-PREFIX = /opt/zephyr-sdk
+# To use default build targets (arm, riscv64)
+# call `make` or `make build`
+# it also build `cmake`
+#
+# You can specify target for building
+# through call `make build arm` or `make build riscv64`
+# it also build `cmake`
+#
+# To install built default targets (arm, riscv64)
+# call `make install`
+# it copy built files to `${PREFIX}/zephyr/<target-triplet>`
+# (default PREFIX is /opt)
+#
+# To install specified targets
+# use `make install arm` or `make install riscv64`
+# it copy target files to `${PREFIX}/zephyr
+
+
+
+PREFIX = /opt
 INSTALL := cp -lr
 
+# If arguments set. E.g. `make build` or `make install`
+ifneq (,$(MAKECMDGOALS))
 # If the first argument are "install" or "build"...
 ifneq (,$(filter $(firstword $(MAKECMDGOALS)),install build))
-# use the rest as arguments for "install"
-ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+# Use the rest as targets
+# E.g. `make build arm` or `make install riscv64`
+TARGETS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 # ...and turn them into do-nothing targets
-$(eval $(ARGS):;@:)
+$(eval $(TARGETS):;@:)
 else
-ARGS := arm riscv64
+endif
 endif
 
 # Variables for "install_*" Make recipes
@@ -16,12 +38,12 @@ TARGET = ${1}
 TRIPLET = $(TARGET)-zephyr-eabi
 BUILD_OUT = build/output
 PACKAGE_ROOT = ${BUILD_OUT}/${TRIPLET}
-INSTALL_DIR = $(DESTDIR)$(PREFIX)
+INSTALL_DIR = $(DESTDIR)$(PREFIX)/zephyr-sdk
 
 define install_target
 install_$(1):
 
-	@echo Processing reciepe: install_$(1)
+	@echo Processing the recipe: install_$(1)
 	@echo Installing target: ${1}
 	@echo Triplet: $(call TRIPLET,${1})
 	@echo Package root: ${call PACKAGE_ROOT,${1}}
@@ -29,7 +51,7 @@ install_$(1):
 
 	# target specific
 	mkdir -p $(INSTALL_DIR)
-	${INSTALL} ${PACKAGE_ROOT}/arm-zephyr-eabi	$(INSTALL_DIR)/
+	${INSTALL} ${PACKAGE_ROOT}/${TRIPLET}	$(INSTALL_DIR)/
 	${INSTALL} ${PACKAGE_ROOT}/bin $(INSTALL_DIR)/
 
 	mkdir -p $(INSTALL_DIR)/lib	
@@ -37,7 +59,7 @@ install_$(1):
 	${INSTALL} ${PACKAGE_ROOT}/lib/ldscripts $(INSTALL_DIR)/lib/
 
 	mkdir -p $(INSTALL_DIR)/libexec/gcc
-	${INSTALL} ${PACKAGE_ROOT}/libexec/gcc/arm-zephyr-eabi $(INSTALL_DIR)/libexec/gcc/
+	${INSTALL} ${PACKAGE_ROOT}/libexec/gcc/${TRIPLET} $(INSTALL_DIR)/libexec/gcc/
 
 	# not target specific?
 	mkdir -p $(INSTALL_DIR)/share
@@ -47,26 +69,59 @@ install_$(1):
 endef
 
 # Dependencies for 'install' recipe
-ifdef ARGS
-install_recipes := $(foreach T, $(ARGS), install_${T})
+ifneq (,${TARGETS})
+# Generate install recipes for selected targets
+install_target_recipes := $(foreach T, $(TARGETS), install_${T})
 else
-ifdef DESTDIR
-DH_INSTALL_TARGET := $(notdir $(DESTDIR))
-ifneq (,$(findstring -zephyr-eabi,$(DH_INSTALL_TARGET)))
-install_recipes := install_$(subst -zephyr-eabi,,${DH_INSTALL_TARGET})
+# If no targets specifies, try guess from DESTDIR
+ifneq (,${DESTDIR})
+DESTDIR_NAME := $(notdir $(DESTDIR))
+ifneq (,$(findstring -zephyr-eabi,$(DESTDIR_NAME)))
+GUESSED_TARGET := $(subst -zephyr-eabi,,${DESTDIR_NAME})
+install_target_recipes := install_${GUESSED_TARGET}
 endif
 endif
+endif
+
+# Default targets if called
+# `make`, `make build` or `make install`
+# without specify targets
+ifeq (,$(TARGETS))
+TARGETS := arm riscv64
 endif
 
 all: build
 
 # Generate Make recipes
-$(foreach T, $(install_recipes), $(eval $(call install_target,$(subst install_,,${T}))))
+$(foreach T, $(install_target_recipes), $(eval $(call install_target,$(subst install_,,${T}))))
 
-install: ${install_recipes}
+# Default install recipes
+ifeq (,${install_target_recipes})
+install_target_recipes := install_every_target
+endif
 
-ifndef install_recipes
-	@echo To install use command: make install target1 target2
+install_cmake:
+
+	@echo Processing the recipe: install_cmake
+	@echo Going to install CMake
+
+	mkdir -p $(INSTALL_DIR)
+	${INSTALL} cmake $(INSTALL_DIR)/zephyr-cmake
+
+install_every_target:
+
+	@echo Processing the recipe: install_every_target as build without filtering folders
+	@echo Going to find built targets and install them
+
+	find ${BUILD_OUT} -maxdepth 1 -name "*-zephyr-eabi" -execdir mkdir -p $(INSTALL_DIR)/'{}' \;
+	find ${BUILD_OUT} -maxdepth 1 -name "*-zephyr-eabi" -exec ${INSTALL} '{}' $(INSTALL_DIR)/ \;
+
+install: ${install_target_recipes} install_cmake
+
+ifndef install_target_recipes
+	@echo No install target specified
+	@echo Going to install everything built target, CMake and hosttools to DESTDIR
+	@echo To install specific target use command: make install target1 target2
 	@echo Example: make install arm riscv64
 	@echo If variable DESTDIR defined with last dir like arm-none-eabi
 	@echo it will work as: make install arm
@@ -120,7 +175,7 @@ add_ada_to_configs:
 
 build: add_preloaded_sources add_ada_to_configs
 
-	+ unset CFLAGS CXXFLAGS && CT_NG=ct-ng ./go.sh ${ARGS}
+	+ unset CFLAGS CXXFLAGS && CT_NG=ct-ng ./go.sh ${TARGETS} cmake
 
 clean:
 	: # do nothing
