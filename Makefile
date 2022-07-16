@@ -94,7 +94,6 @@ endif
 ifeq (,$(TARGETS))
 TARGETS := arm riscv64
 endif
-TRIPLETS := $(foreach t,$(TARGETS),${t}-zephyr-eabi)
 
 all: build
 
@@ -214,7 +213,7 @@ add_preloaded_sources:
 build: add_preloaded_sources
 	# set gcc-12
 	./scripts/set_gcc_alternatives.sh 12
-	+ unset CFLAGS CXXFLAGS && CT_NG=ct-ng ./go.sh ${TRIPLETS}
+	+ unset CFLAGS CXXFLAGS && CT_NG=ct-ng ./go.sh ${TARGETS}
 
 clean:
 	: # do nothing
