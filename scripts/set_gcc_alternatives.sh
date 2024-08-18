@@ -1,5 +1,8 @@
 #!/bin/sh
 
+update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 30
+update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 30
+
 if [ -z "$1" ]; then
     echo "usage: $0 version" 1>&2
     exit 1
