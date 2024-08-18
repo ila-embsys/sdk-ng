@@ -156,7 +156,7 @@ for t in ${TARGETS}; do
 			;;
 	esac
 
-	${CT_NG} clean
+	# ${CT_NG} clean
 	cp ${GITDIR}/configs/${t}.config ${TARGET_BUILD_DIR}/defconfig
 
 	# Disable python support in GDB on MacOS, this isn't currently working.
