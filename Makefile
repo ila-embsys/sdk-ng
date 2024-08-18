@@ -211,8 +211,6 @@ add_preloaded_sources:
 	test -e build/output/sources/zlib-*.tar.xz || ln zlib-*.tar.xz build/output/sources/
 
 build: add_preloaded_sources
-	# set gcc-12
-	./scripts/set_gcc_alternatives.sh 12
 	+ unset CFLAGS CXXFLAGS && CT_NG=ct-ng ./go.sh ${TARGETS}
 
 clean:
