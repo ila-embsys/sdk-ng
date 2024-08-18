@@ -1,12 +1,14 @@
 PREFIX = /opt/zephyr-sdk
 INSTALL := cp -lr
 
-# If the first argument is "install"...
-ifeq (install,$(firstword $(MAKECMDGOALS)))
+# If the first argument are "install" or "build"...
+ifneq (,$(filter $(firstword $(MAKECMDGOALS)),install build))
 # use the rest as arguments for "install"
-INSTALL_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 # ...and turn them into do-nothing targets
-$(eval $(INSTALL_ARGS):;@:)
+$(eval $(ARGS):;@:)
+else
+ARGS := arm riscv64
 endif
 
 # Variables for "install_*" Make recipes
@@ -45,24 +47,29 @@ install_$(1):
 endef
 
 # Dependencies for 'install' recipe
-ifdef INSTALL_ARGS
-install_recipes := $(foreach T, $(INSTALL_ARGS), install_${T})
+ifdef ARGS
+install_recipes := $(foreach T, $(ARGS), install_${T})
 else
 ifdef DESTDIR
 DH_INSTALL_TARGET := $(notdir $(DESTDIR))
+ifneq (,$(findstring -zephyr-eabi,$(DH_INSTALL_TARGET)))
 install_recipes := install_$(subst -zephyr-eabi,,${DH_INSTALL_TARGET})
 endif
 endif
+endif
+
+all: build
 
 # Generate Make recipes
 $(foreach T, $(install_recipes), $(eval $(call install_target,$(subst install_,,${T}))))
 
-all: build
-
 install: ${install_recipes}
 
 ifndef install_recipes
-	@echo kek
+	@echo To install use command: make install target1 target2
+	@echo Example: make install arm riscv64
+	@echo If variable DESTDIR defined with last dir like arm-none-eabi
+	@echo it will work as: make install arm
 endif
 	
 
@@ -113,7 +120,7 @@ add_ada_to_configs:
 
 build: add_preloaded_sources add_ada_to_configs
 
-	+ unset CFLAGS CXXFLAGS && CT_NG=ct-ng ./go.sh arm
+	+ unset CFLAGS CXXFLAGS && CT_NG=ct-ng ./go.sh ${ARGS}
 
 clean:
 	: # do nothing
