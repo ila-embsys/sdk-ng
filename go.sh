@@ -120,9 +120,13 @@ for t in ${TARGETS}; do
 		# We handled cmake above, so skip it here
 		continue
 	fi
-	if [ ! -f ${GITDIR}/configs/${t}.config ]; then
-		echo "Target configuration does not exist"
-		exit 1
+	if [ ! -f ${GITDIR}/configs/${t}-zephyr-elf.config ]; then
+		if [ ! -f ${GITDIR}/configs/${t}-zephyr-eabi.config ]; then
+			if [ ! -f ${GITDIR}/configs/${t}_zephyr-elf.config ]; then
+				echo "Target configuration does not exist"
+				exit 
+			fi
+		fi
 	fi
 
 	# build_crosstool
@@ -157,7 +161,7 @@ for t in ${TARGETS}; do
 	esac
 
 	# ${CT_NG} clean
-	cp ${GITDIR}/configs/${t}.config ${TARGET_BUILD_DIR}/defconfig
+	cp ${GITDIR}/configs/${TRIPLET}.config ${TARGET_BUILD_DIR}/defconfig
 
 	# Disable python support in GDB on MacOS, this isn't currently working.
 	# It builds ok, but the resulting GDB segfaults.
@@ -183,7 +187,7 @@ for t in ${TARGETS}; do
 	${GITDIR}/scripts/patch_config_for_ada.sh ${TARGET_BUILD_DIR}/defconfig
 
 	${CT_NG} defconfig DEFCONFIG=${TARGET_BUILD_DIR}/defconfig
-	${CT_NG} savedefconfig DEFCONFIG=${TARGET_BUILD_DIR}/${t}.config
+	${CT_NG} savedefconfig DEFCONFIG=${TARGET_BUILD_DIR}/${TRIPLET}.config
 	${CT_NG} SDK_NG_HOME=${SDK_NG_HOME} build -j ${JOBS}
 	if [ $? != 0 ]; then
 		exit 1
@@ -191,7 +195,7 @@ for t in ${TARGETS}; do
 	rm -rf ${CT_PREFIX}/*/newlib-nano
 
 	popd
-	# rm -fr ${TARGET_BUILD_DIR}
+	rm -fr ${TARGET_BUILD_DIR}
 	mv ${CT_PREFIX}/${TRIPLET}/build.log.bz2 ${OUTPUT_DIR}/build.${t}.${os}.${machine}.log.bz2
 	tar -jcvf ${TARBALL_DIR}/${t}.${os}.${machine}.tar.bz2 -C ${OUTPUT_DIR} ${TARGET_DIR}${TRIPLET}
 done
