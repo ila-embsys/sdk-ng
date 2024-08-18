@@ -25,8 +25,8 @@ install:
 	${INSTALL} ${BUILD_OUT}/share/gdb $(DESTDIR)$(PREFIX)/share/
 	${INSTALL} ${BUILD_OUT}/share/licenses $(DESTDIR)$(PREFIX)/share/
 
+add_preloaded_sources:
 
-build:
 	mkdir -p build/output/sources
 
 	# newlib-git.tar.bz2
@@ -65,6 +65,13 @@ build:
 	# zlib-1.2.11.tar.xz
 	test -e build/output/sources/zlib-*.tar.xz || ln zlib-*.tar.xz build/output/sources/
 
+add_ada_to_configs:
+
+	./patch_configs_for_ada.sh
+
+
+build: add_preloaded_sources add_ada_to_configs
+
 	+ unset CFLAGS CXXFLAGS && CT_NG=ct-ng ./go.sh arm
 
 clean:
@@ -75,4 +82,4 @@ distclean: clean
 uninstall:
 	: # do nothing
 
-.PHONY: all build install clean distclean uninstall
+.PHONY: all add_preloaded_sources add_ada_to_configs build install clean distclean uninstall
