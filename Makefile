@@ -94,6 +94,7 @@ endif
 ifeq (,$(TARGETS))
 TARGETS := arm riscv64
 endif
+TRIPLETS := $(foreach t,$(TARGETS),${t}-zephyr-eabi)
 
 all: build
 
@@ -156,56 +157,63 @@ ifndef install_target_recipes
 	@echo If variable DESTDIR defined with last dir like arm-none-eabi
 	@echo it will work as: make install arm
 endif
-	
+
 
 add_preloaded_sources:
 
 	mkdir -p build/output/sources
 
-	# newlib-git.tar.bz2
-	test -e build/output/sources/newlib-git-*.tar.bz2 || ln newlib-git-*.tar.bz2 build/output/sources/
+	# # newlib-git.tar.bz2
+	# test -e newlib-git-*.tar.bz2 || tar -cjSf newlib-git-$(shell cd newlib && git rev-parse --short=8 HEAD).tar.bz2 newlib
+	# test -e build/output/sources/newlib-git-*.tar.bz2 || ln newlib-git-*.tar.bz2 build/output/sources/
 
-	# newlib-nano-git.tar.bz2
-	test -e build/output/sources/newlib-nano-git-*.tar.bz2 || ln newlib-nano-git-*.tar.bz2 build/output/sources/
+	# # newlib-nano-git.tar.bz2
+	# test -e newlib-nano-git-*.tar.bz2 || tar -cjSf newlib-nano-git-$(shell cd newlib && git rev-parse --short=8 HEAD).tar.bz2 newlib
+	# test -e build/output/sources/newlib-nano-git-*.tar.bz2 || ln newlib-nano-git-*.tar.bz2 build/output/sources/
+	
+	# # binutils-git-c7d30a54fc1.tar.bz2
+	# test -e binutils-git-*.tar.bz2 || tar -cjSf binutils-git-$(shell cd binutils && git rev-parse --short=8 HEAD).tar.bz2 binutils
+	# test -e build/output/sources/binutils-git-*.tar.bz2 || ln binutils-git-*.tar.bz2 build/output/sources/
 
-	# binutils-git-c7d30a54fc1.tar.bz2
-	test -e build/output/sources/binutils-git-*.tar.bz2 || ln binutils-git-*.tar.bz2 build/output/sources/
+	# # gcc-git-15e25dda.tar.bz2
+	# test -e gcc-*.tar.bz2 || tar -cjSf gcc-git-$(shell cd gcc && git rev-parse --short=8 HEAD).tar.bz2 gcc
+	# test -e build/output/sources/gcc-*.tar.bz2 || ln gcc-*.tar.bz2 build/output/sources/
 
-	# gcc-git-15e25dda.tar.bz2
-	test -e build/output/sources/gcc-*.tar.bz2 || ln gcc-*.tar.bz2 build/output/sources/
+	# # gdb-git-76b05e96250.tar.bz2
+	# test -e gdb-git-*.tar.bz2 || tar -cjSf gdb-git-$(shell cd gdb && git rev-parse --short=8 HEAD).tar.bz2 gdb
+	# test -e build/output/sources/gdb-git-*.tar.bz2 || ln gdb-git-*.tar.bz2 build/output/sources/
 
-	# expat-2.2.9.tar.xz
+	# expat-2.4.1.tar.xz
+	test -e expat-*.tar.xz || curl -L -O https://github.com/libexpat/libexpat/releases/download/R_2_4_1/expat-2.4.1.tar.xz
 	test -e build/output/sources/expat-*.tar.xz || ln expat-*.tar.xz build/output/sources/
 
-	# gdb-git-76b05e96250.tar.bz2
-	test -e build/output/sources/gdb-git-*.tar.bz2 || ln gdb-git-*.tar.bz2 build/output/sources/
-
 	# gmp-6.2.1.tar.xz
+	test -e gmp-*.tar.xz || curl -L -O https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz
 	test -e build/output/sources/gmp-*.tar.xz || ln gmp-*.tar.xz build/output/sources/
 
-	# isl-0.22.tar.xz
+	# isl-0.24.tar.xz
+	test -e isl-*.tar.xz || curl -L -O https://libisl.sourceforge.io/isl-0.24.tar.xz
 	test -e build/output/sources/isl-*.tar.xz || ln isl-*.tar.xz build/output/sources/
 
 	# mpc-1.2.0.tar.gz
+	test -e mpc-*.tar.gz || curl -L -O https://www.multiprecision.org/downloads/mpc-1.2.0.tar.gz
 	test -e build/output/sources/mpc-*.tar.gz || ln mpc-*.tar.gz build/output/sources/
 
 	# mpfr-4.1.0.tar.xz
+	test -e mpfr-*.tar.xz || curl -L -O https://www.mpfr.org/mpfr-current/mpfr-4.1.0.tar.xz
 	test -e build/output/sources/mpfr-*.tar.xz || ln mpfr-*.tar.xz build/output/sources/
 
 	# ncurses-6.2.tar.gz
+	test -e ncurses-*.tar.gz || curl -L -O https://invisible-mirror.net/archives/ncurses/ncurses-6.2.tar.gz
 	test -e build/output/sources/ncurses-*.tar.gz || ln ncurses-*.tar.gz build/output/sources/
 
 	# zlib-1.2.11.tar.xz
+	test -e zlib-*.tar.xz || curl -L -O https://sourceforge.net/projects/libpng/files/zlib/1.2.11/zlib-1.2.11.tar.xz
 	test -e build/output/sources/zlib-*.tar.xz || ln zlib-*.tar.xz build/output/sources/
 
-add_ada_to_configs:
+build: add_preloaded_sources
 
-	./patch_configs_for_ada.sh
-
-
-build: add_preloaded_sources add_ada_to_configs
-
-	+ unset CFLAGS CXXFLAGS && CT_NG=ct-ng ./go.sh ${TARGETS}
+	+ unset CFLAGS CXXFLAGS && CT_NG=ct-ng ./go.sh ${TRIPLETS}
 
 clean:
 	: # do nothing
@@ -215,4 +223,4 @@ distclean: clean
 uninstall:
 	: # do nothing
 
-.PHONY: all install_cmake install_every_target install_common install_targets add_preloaded_sources add_ada_to_configs build install clean distclean uninstall
+.PHONY: all install_cmake install_every_target install_common install_targets add_preloaded_sources build install clean distclean uninstall

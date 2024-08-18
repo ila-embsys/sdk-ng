@@ -170,10 +170,15 @@ for t in ${TARGETS}; do
 
 	cat ${TARGET_BUILD_DIR}/defconfig | grep -q "CT_ALLOW_BUILD_AS_ROOT=y" || echo "CT_ALLOW_BUILD_AS_ROOT=y" >> ${TARGET_BUILD_DIR}/defconfig
 	cat ${TARGET_BUILD_DIR}/defconfig | grep -q "CT_ALLOW_BUILD_AS_ROOT_SURE=y" || echo "CT_ALLOW_BUILD_AS_ROOT_SURE=y" >> ${TARGET_BUILD_DIR}/defconfig
+	cat ${TARGET_BUILD_DIR}/defconfig | grep -q "CT_LOCAL_TARBALLS_DIR" || echo "CT_LOCAL_TARBALLS_DIR=\"${CT_PREFIX}/sources\"" >> ${TARGET_BUILD_DIR}/defconfig
+
+	sed -i -e 's/GITHUB_WORKSPACE/SDK_NG_HOME/' ${TARGET_BUILD_DIR}/defconfig
+
+	${GITDIR}/scripts/patch_config_for_ada.sh ${TARGET_BUILD_DIR}/defconfig
 
 	${CT_NG} defconfig DEFCONFIG=${TARGET_BUILD_DIR}/defconfig
 	${CT_NG} savedefconfig DEFCONFIG=${TARGET_BUILD_DIR}/${t}.config
-	${CT_NG} build -j ${JOBS}
+	${CT_NG} SDK_NG_HOME=${SDK_NG_HOME} build -j ${JOBS}
 	if [ $? != 0 ]; then
 		exit 1
 	fi

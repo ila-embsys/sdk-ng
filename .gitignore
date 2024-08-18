@@ -2,3 +2,15 @@
 bin/*
 share/*
 build/*
+
+# ct-ng preload sources
+expat-*.tar.xz
+gmp-*.tar.xz
+isl-*.tar.xz
+mpc-*.tar.gz
+mpfr-*.tar.xz
+ncurses-*.tar.gz
+zlib-*.tar.xz
+
+# ct-ng build
+build
