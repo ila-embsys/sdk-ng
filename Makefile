@@ -175,7 +175,7 @@ add_ada_to_configs:
 
 build: add_preloaded_sources add_ada_to_configs
 
-	+ unset CFLAGS CXXFLAGS && CT_NG=ct-ng ./go.sh ${TARGETS} cmake
+	+ unset CFLAGS CXXFLAGS && CT_NG=ct-ng ./go.sh ${TARGETS}
 
 clean:
 	: # do nothing
